@@ -1,0 +1,7 @@
+gradio
+pinecone-client
+huggingface-hub
+python-dotenv
+sentence-transformers
+requests
+pandas

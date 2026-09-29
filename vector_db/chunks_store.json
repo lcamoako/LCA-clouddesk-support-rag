@@ -1,0 +1,1450 @@
+[
+  {
+    "page_content": "Authentication\n\n# Authentication\nCloudDesk's REST API supports two authentication methods: **API Keys** (recommended for server-to-server integrations) and **OAuth 2.0** (recommended for third-party apps acting on behalf of a user).",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Authentication",
+      "last_updated": "2026-06-02",
+      "version": "v3.6",
+      "source_file": "authentication.md",
+      "doc_id": "API-AUTH-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0001"
+    }
+  },
+  {
+    "page_content": "Authentication\n\n1. API Key Authentication\nEvery CloudDesk workspace can generate API keys from **Settings \u2192 Developer \u2192 API Keys**. Keys are scoped to a workspace and inherit the permissions of the role that created them.\n### Making an authenticated request\nInclude the key in the `Authorization` header as a Bearer token:\n```\nGET /v1/tickets HTTP/1.1\nHost: api.clouddesk.io\nAuthorization: Bearer cd_live_8f2a1c9e4b7d4e2a9c1f0a6b3d7e9f10\n```\n### Key types\n| Prefix | Environment | Notes |\n|---|---|---|\n| `cd_live_` | Production | Full access per role permissions |\n| `cd_test_` | Sandbox | Data isolated from production workspace |\n### Rate limits\n- Standard plan: 60 requests/minute per key\n- Growth plan: 300 requests/minute per key\n- Enterprise plan: 1,200 requests/minute per key\nExceeding the limit returns `HTTP 429 Too Many Requests` with a `Retry-After` header (seconds). Implement exponential backoff; do not retry immediately on a 429.\n### Key rotation",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Authentication",
+      "last_updated": "2026-06-02",
+      "version": "v3.6",
+      "source_file": "authentication.md",
+      "doc_id": "API-AUTH-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0002"
+    }
+  },
+  {
+    "page_content": "Authentication\n\n429 Too Many Requests` with a `Retry-After` header (seconds). Implement exponential backoff; do not retry immediately on a 429.\n### Key rotation\nOld keys remain valid for 24 hours after a new key is generated, to allow zero-downtime rotation. Revoking a key immediately invalidates it \u2014 in-flight requests using a revoked key return `401 Unauthorized`.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Authentication",
+      "last_updated": "2026-06-02",
+      "version": "v3.6",
+      "source_file": "authentication.md",
+      "doc_id": "API-AUTH-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0003"
+    }
+  },
+  {
+    "page_content": "Authentication\n\n2. OAuth 2.0 (Authorization Code flow)\nUsed for public apps (e.g., Slack, marketplace integrations) that need to act on behalf of a CloudDesk user.\n1. Redirect the user to `https://auth.clouddesk.io/oauth/authorize` with `client_id`, `redirect_uri`, `scope`, and `state`.\n2. User approves the requested scopes.\n3. CloudDesk redirects back to `redirect_uri` with an authorization `code`.\n4. Exchange the code at `POST https://auth.clouddesk.io/oauth/token` for an `access_token` (expires in 1 hour) and `refresh_token` (expires in 90 days).\n### Common OAuth errors\n| Error | Cause | Fix |\n|---|---|---|\n| `invalid_scope` | Requested scope not enabled for the app | Enable scope in app registration or request a narrower scope |\n| `redirect_uri_mismatch` | Callback URL doesn't exactly match registered URI | Ensure exact match, including trailing slash and protocol |\n| `invalid_grant` | Authorization code expired (codes expire after 60 seconds) or already used | Restart the authorization flow |",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Authentication",
+      "last_updated": "2026-06-02",
+      "version": "v3.6",
+      "source_file": "authentication.md",
+      "doc_id": "API-AUTH-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0004"
+    }
+  },
+  {
+    "page_content": "Authentication\n\n3. Signature verification for inbound webhooks\nSee `webhooks-reference.md` \u2014 webhook payloads are authenticated differently from outbound API calls (HMAC signature, not Bearer token).",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Authentication",
+      "last_updated": "2026-06-02",
+      "version": "v3.6",
+      "source_file": "authentication.md",
+      "doc_id": "API-AUTH-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0005"
+    }
+  },
+  {
+    "page_content": "Authentication\n\nRelated resources\n- Help Center: \"Managing API Keys and Rate Limits\" (HC-104)\n- Runbook: \"API & Database Latency Incident Response\"",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Authentication",
+      "last_updated": "2026-06-02",
+      "version": "v3.6",
+      "source_file": "authentication.md",
+      "doc_id": "API-AUTH-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0006"
+    }
+  },
+  {
+    "page_content": "Webhooks Reference\n\n# Webhooks Reference\nWebhooks let your application receive real-time notifications when events occur in CloudDesk (new ticket, ticket resolved, SLA breach, customer reply, etc.).",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Webhooks Reference",
+      "last_updated": "2026-07-14",
+      "version": "v3.6",
+      "source_file": "webhooks-reference.md",
+      "doc_id": "API-WEBHOOK-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0007"
+    }
+  },
+  {
+    "page_content": "Webhooks Reference\n\nConfiguring an endpoint\n1. Go to **Settings \u2192 Developer \u2192 Webhooks \u2192 Add Endpoint**.\n2. Enter a publicly reachable HTTPS URL. HTTP (non-TLS) endpoints are rejected.\n3. Select the events to subscribe to.\n4. CloudDesk generates a **signing secret** (`whsec_...`) shown once \u2014 store it securely.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Webhooks Reference",
+      "last_updated": "2026-07-14",
+      "version": "v3.6",
+      "source_file": "webhooks-reference.md",
+      "doc_id": "API-WEBHOOK-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0008"
+    }
+  },
+  {
+    "page_content": "Webhooks Reference\n\nPayload format\n```json\n{\n\"event\": \"ticket.resolved\",\n\"created_at\": \"2026-07-01T14:22:03Z\",\n\"webhook_id\": \"wh_3f9a2b\",\n\"data\": {\n\"ticket_id\": \"tkt_88213\",\n\"status\": \"resolved\",\n\"resolved_by\": \"agent_4471\"\n}\n}\n```",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Webhooks Reference",
+      "last_updated": "2026-07-14",
+      "version": "v3.6",
+      "source_file": "webhooks-reference.md",
+      "doc_id": "API-WEBHOOK-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0009"
+    }
+  },
+  {
+    "page_content": "Webhooks Reference\n\nVerifying the signature\nEvery request includes an `X-CloudDesk-Signature` header: `t=<timestamp>,v1=<hex_hmac>`.\nCompute `HMAC-SHA256(signing_secret, \"{t}.{raw_request_body}\")` and compare to `v1` using a constant-time comparison. Reject the request if the timestamp is more than 5 minutes old (replay protection).",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Webhooks Reference",
+      "last_updated": "2026-07-14",
+      "version": "v3.6",
+      "source_file": "webhooks-reference.md",
+      "doc_id": "API-WEBHOOK-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0010"
+    }
+  },
+  {
+    "page_content": "Webhooks Reference\n\nRetry policy\nIf your endpoint does not return a `2xx` status within 10 seconds, CloudDesk retries with exponential backoff:\n| Attempt | Delay after previous attempt |\n|---|---|\n| 1 (initial) | \u2014 |\n| 2 | 1 minute |\n| 3 | 5 minutes |\n| 4 | 30 minutes |\n| 5 | 2 hours |\n| 6 (final) | 12 hours |\nAfter the 6th failed attempt, the event is marked `failed` and the webhook is automatically **disabled** if more than 20 consecutive events fail. A workspace admin must re-enable it from the Webhooks dashboard.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Webhooks Reference",
+      "last_updated": "2026-07-14",
+      "version": "v3.6",
+      "source_file": "webhooks-reference.md",
+      "doc_id": "API-WEBHOOK-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0011"
+    }
+  },
+  {
+    "page_content": "Webhooks Reference\n\nCommon causes of webhook failures\n1. **Endpoint returns non-2xx or times out** \u2014 check application logs for exceptions during processing; ensure the handler responds before doing slow downstream work (acknowledge first, process asynchronously).\n2. **TLS certificate expired or self-signed** \u2014 CloudDesk's webhook sender validates certificates and will not deliver to endpoints with invalid TLS.\n3. **Signature verification mismatch** \u2014 usually caused by re-serializing the JSON body before verifying (whitespace/key-order changes the byte string). Verify against the *raw* request body, not a re-parsed object.\n4. **Firewall/IP allowlist blocking CloudDesk's sending IPs** \u2014 see the current IP ranges at `/v1/meta/webhook-ips`.\n5. **Endpoint URL changed without updating CloudDesk** (e.g., after a load balancer migration) \u2014 returns connection refused/DNS errors.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Webhooks Reference",
+      "last_updated": "2026-07-14",
+      "version": "v3.6",
+      "source_file": "webhooks-reference.md",
+      "doc_id": "API-WEBHOOK-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0012"
+    }
+  },
+  {
+    "page_content": "Webhooks Reference\n\n**Endpoint URL changed without updating CloudDesk** (e.g., after a load balancer migration) \u2014 returns connection refused/DNS errors.\n6. **Payload size limit exceeded** \u2014 bulk events (e.g., `tickets.bulk_updated`) are capped at 512 KB; oversized payloads are chunked into multiple deliveries with a `page` field.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Webhooks Reference",
+      "last_updated": "2026-07-14",
+      "version": "v3.6",
+      "source_file": "webhooks-reference.md",
+      "doc_id": "API-WEBHOOK-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0013"
+    }
+  },
+  {
+    "page_content": "Webhooks Reference\n\nManually replaying failed events\n`POST /v1/webhooks/{webhook_id}/events/{event_id}/replay` \u2014 replays a single event. Replayed events carry the original `created_at` but a new `webhook_id` delivery attempt ID.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Webhooks Reference",
+      "last_updated": "2026-07-14",
+      "version": "v3.6",
+      "source_file": "webhooks-reference.md",
+      "doc_id": "API-WEBHOOK-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0014"
+    }
+  },
+  {
+    "page_content": "Webhooks Reference\n\nRelated resources\n- Help Center: \"Troubleshooting Failed Webhook Deliveries\" (HC-102)\n- Runbook: \"Webhook Delivery Failure Response\"",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "Webhooks Reference",
+      "last_updated": "2026-07-14",
+      "version": "v3.6",
+      "source_file": "webhooks-reference.md",
+      "doc_id": "API-WEBHOOK-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0015"
+    }
+  },
+  {
+    "page_content": "SAML & SCIM Configuration Reference\n\n# SAML & SCIM Configuration Reference\nTechnical reference for administrators wiring an Identity Provider (IdP) \u2014 Okta, Azure AD, OneLogin, Google Workspace \u2014 to CloudDesk via SAML 2.0, plus SCIM for automated user provisioning.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "SAML & SCIM Configuration Reference",
+      "last_updated": "2026-07-28",
+      "version": "v3.6",
+      "source_file": "saml-scim-reference.md",
+      "doc_id": "API-SSO-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0016"
+    }
+  },
+  {
+    "page_content": "SAML & SCIM Configuration Reference\n\nSAML metadata\nCloudDesk's Service Provider (SP) metadata is available per-workspace at:\n```\nGET https://auth.clouddesk.io/saml/{workspace_id}/metadata.xml\n```\nKey attributes your IdP must map:\n| SAML Attribute | Maps to | Required |\n|---|---|---|\n| `NameID` (email format) | User email | Yes |\n| `firstName` | Given name | No |\n| `lastName` | Family name | No |\n| `department` | Team assignment (if team-mapping enabled) | No |",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "SAML & SCIM Configuration Reference",
+      "last_updated": "2026-07-28",
+      "version": "v3.6",
+      "source_file": "saml-scim-reference.md",
+      "doc_id": "API-SSO-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0017"
+    }
+  },
+  {
+    "page_content": "SAML & SCIM Configuration Reference\n\nDomain verification\nSAML is enforced **per verified domain**, not per workspace. Before SSO applies to a domain, it must be verified:\n1. `POST /v1/sso/domains` with `{ \"domain\": \"acme.com\" }` returns a TXT record to add to DNS.\n2. CloudDesk polls DNS every 15 minutes for up to 24 hours.\n3. Once verified, `domain.status` becomes `active`.\n**Important:** adding a *new* domain to a workspace that already has SSO enabled does **not** automatically enforce SSO on that new domain. Each domain requires its own verification and an explicit `enforce_sso: true` flag via `PATCH /v1/sso/domains/{domain_id}`. Until that flag is set, users on the new domain can still log in with a password, which is a common source of \"SSO stopped working\" reports \u2014 the more frequent underlying cause is actually the *original* domain's certificate expiring around the same time a new domain was added, not the new domain itself.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "SAML & SCIM Configuration Reference",
+      "last_updated": "2026-07-28",
+      "version": "v3.6",
+      "source_file": "saml-scim-reference.md",
+      "doc_id": "API-SSO-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0018"
+    }
+  },
+  {
+    "page_content": "SAML & SCIM Configuration Reference\n\nCertificate expiry\nIdP signing certificates are commonly rotated on a 1\u20133 year cycle. CloudDesk does **not** auto-renew IdP certificates \u2014 an expired cert causes all SAML logins for that domain to fail with `saml_signature_invalid` until an admin uploads the renewed certificate at `Settings \u2192 Security \u2192 SSO \u2192 Identity Provider Certificate`.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "SAML & SCIM Configuration Reference",
+      "last_updated": "2026-07-28",
+      "version": "v3.6",
+      "source_file": "saml-scim-reference.md",
+      "doc_id": "API-SSO-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0019"
+    }
+  },
+  {
+    "page_content": "SAML & SCIM Configuration Reference\n\nSCIM provisioning\nBase URL: `https://api.clouddesk.io/scim/v2`\nSupports `Users` and `Groups` resources per the SCIM 2.0 spec. Deactivating a user via SCIM (`active: false`) revokes all active sessions within 5 minutes.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "SAML & SCIM Configuration Reference",
+      "last_updated": "2026-07-28",
+      "version": "v3.6",
+      "source_file": "saml-scim-reference.md",
+      "doc_id": "API-SSO-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0020"
+    }
+  },
+  {
+    "page_content": "SAML & SCIM Configuration Reference\n\nCommon error codes\n| Code | Meaning | Typical fix |\n|---|---|---|\n| `saml_signature_invalid` | Certificate mismatch or expired | Re-upload current IdP certificate |\n| `saml_domain_not_verified` | NameID domain has no active verification | Complete domain verification |\n| `saml_clock_skew` | IdP and SP clocks differ by >5 minutes | Sync IdP server time (NTP) |\n| `scim_duplicate_external_id` | Two users provisioned with same externalId | De-duplicate in IdP directory |",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "SAML & SCIM Configuration Reference",
+      "last_updated": "2026-07-28",
+      "version": "v3.6",
+      "source_file": "saml-scim-reference.md",
+      "doc_id": "API-SSO-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0021"
+    }
+  },
+  {
+    "page_content": "SAML & SCIM Configuration Reference\n\nRelated resources\n- Help Center: \"Setting Up Single Sign-On (SSO) with SAML\" (HC-103)\n- Runbook: \"SSO/SAML Authentication Outage Response\"",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "SAML & SCIM Configuration Reference",
+      "last_updated": "2026-07-28",
+      "version": "v3.6",
+      "source_file": "saml-scim-reference.md",
+      "doc_id": "API-SSO-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0022"
+    }
+  },
+  {
+    "page_content": "REST API Endpoints Overview\n\n# REST API Endpoints Overview\nBase URL: `https://api.clouddesk.io/v1`",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "REST API Endpoints Overview",
+      "last_updated": "2026-05-20",
+      "version": "v3.5",
+      "source_file": "rest-api-endpoints.md",
+      "doc_id": "API-CORE-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0023"
+    }
+  },
+  {
+    "page_content": "REST API Endpoints Overview\n\nTickets\n| Method | Path | Description |\n|---|---|---|\n| GET | `/tickets` | List tickets, filterable by `status`, `assignee`, `created_after` |\n| GET | `/tickets/{id}` | Retrieve a single ticket with full conversation thread |\n| POST | `/tickets` | Create a ticket |\n| PATCH | `/tickets/{id}` | Update status, priority, or assignee |\n| POST | `/tickets/{id}/replies` | Add a reply to a ticket |",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "REST API Endpoints Overview",
+      "last_updated": "2026-05-20",
+      "version": "v3.5",
+      "source_file": "rest-api-endpoints.md",
+      "doc_id": "API-CORE-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0024"
+    }
+  },
+  {
+    "page_content": "REST API Endpoints Overview\n\nCustomers\n| Method | Path | Description |\n|---|---|---|\n| GET | `/customers` | List customers |\n| GET | `/customers/{id}` | Retrieve customer profile and ticket history |\n| POST | `/customers` | Create a customer record |",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "REST API Endpoints Overview",
+      "last_updated": "2026-05-20",
+      "version": "v3.5",
+      "source_file": "rest-api-endpoints.md",
+      "doc_id": "API-CORE-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0025"
+    }
+  },
+  {
+    "page_content": "REST API Endpoints Overview\n\nAgents & Teams\n| Method | Path | Description |\n|---|---|---|\n| GET | `/agents` | List agents and their current ticket load |\n| GET | `/teams/{id}` | Retrieve team routing rules |",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "REST API Endpoints Overview",
+      "last_updated": "2026-05-20",
+      "version": "v3.5",
+      "source_file": "rest-api-endpoints.md",
+      "doc_id": "API-CORE-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0026"
+    }
+  },
+  {
+    "page_content": "REST API Endpoints Overview\n\nPagination\nAll list endpoints use cursor pagination: `?limit=50&cursor=<opaque_token>`. The response includes `next_cursor`; pass it back to fetch the next page. `limit` max is 100.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "REST API Endpoints Overview",
+      "last_updated": "2026-05-20",
+      "version": "v3.5",
+      "source_file": "rest-api-endpoints.md",
+      "doc_id": "API-CORE-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0027"
+    }
+  },
+  {
+    "page_content": "REST API Endpoints Overview\n\nErrors\nErrors follow a consistent envelope:\n```json\n{\n\"error\": {\n\"code\": \"resource_not_found\",\n\"message\": \"Ticket tkt_00000 does not exist in this workspace.\",\n\"request_id\": \"req_7a2c9e\"\n}\n}\n```\nInclude `request_id` when contacting support about an API error.",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "REST API Endpoints Overview",
+      "last_updated": "2026-05-20",
+      "version": "v3.5",
+      "source_file": "rest-api-endpoints.md",
+      "doc_id": "API-CORE-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0028"
+    }
+  },
+  {
+    "page_content": "REST API Endpoints Overview\n\nRelated resources\n- `authentication.md` \u2014 how to authenticate requests\n- `webhooks-reference.md` \u2014 real-time event notifications instead of polling",
+    "metadata": {
+      "source_type": "api_documentation",
+      "title": "REST API Endpoints Overview",
+      "last_updated": "2026-05-20",
+      "version": "v3.5",
+      "source_file": "rest-api-endpoints.md",
+      "doc_id": "API-CORE-01",
+      "audience": "developer",
+      "chunk_id": "api_doc_0029"
+    }
+  },
+  {
+    "page_content": "Runbook: Webhook Delivery Failure Response\n\n# Runbook: Webhook Delivery Failure Response",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: Webhook Delivery Failure Response",
+      "last_updated": "2026-07-16",
+      "version": "v3.6",
+      "source_file": "runbook-webhook-delivery-failures.md",
+      "doc_id": "RB-WEBHOOK-01",
+      "severity_scope": "SEV3-SEV2",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0030"
+    }
+  },
+  {
+    "page_content": "Runbook: Webhook Delivery Failure Response\n\nTrigger conditions\n- Customer reports webhooks not arriving, or arriving late.\n- Internal alert: `webhook_dead_letter_queue_depth > 500` for 10+ minutes (PagerDuty: `#webhooks-oncall`).\n- Spike in `webhook.delivery.failed` events in the delivery-service dashboard.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: Webhook Delivery Failure Response",
+      "last_updated": "2026-07-16",
+      "version": "v3.6",
+      "source_file": "runbook-webhook-delivery-failures.md",
+      "doc_id": "RB-WEBHOOK-01",
+      "severity_scope": "SEV3-SEV2",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0031"
+    }
+  },
+  {
+    "page_content": "Runbook: Webhook Delivery Failure Response\n\nTriage (first 5 minutes)\n1. Check the **delivery-service** health dashboard (Grafana \u2192 `webhook-delivery`) for elevated latency or error rate on the *sending* side. If the sender itself is degraded, this is a platform incident \u2014 page the on-call SRE, skip to step 5.\n2. If the sender is healthy, the failure is almost always on the **customer's receiving endpoint**. Pull the affected `webhook_id` and inspect the last 10 delivery attempts via internal tool `admin/webhooks/{id}/attempts`.\n3. Classify the failure using the HTTP status / error captured on the attempt:\n- `timeout` / connection refused \u2192 endpoint down or unreachable\n- `4xx` \u2192 endpoint rejecting the payload (auth, malformed request, or the customer's signature verification failing)\n- `5xx` \u2192 customer's server erroring while processing\n- TLS handshake failure \u2192 expired/invalid certificate on customer endpoint",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: Webhook Delivery Failure Response",
+      "last_updated": "2026-07-16",
+      "version": "v3.6",
+      "source_file": "runbook-webhook-delivery-failures.md",
+      "doc_id": "RB-WEBHOOK-01",
+      "severity_scope": "SEV3-SEV2",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0032"
+    }
+  },
+  {
+    "page_content": "Runbook: Webhook Delivery Failure Response\n\nResolution paths\n### Customer endpoint is down or timing out\n- Confirm with the customer that their receiving service is up.\n- If it was down for < 12 hours (before the 6-attempt retry window exhausted), the events will redeliver automatically \u2014 no action needed once their endpoint recovers.\n- If more than 20 consecutive events failed, the webhook was **auto-disabled**. Re-enable via `admin/webhooks/{id}/enable` once the customer confirms their endpoint is fixed, then instruct them to use `POST /v1/webhooks/{id}/events/{event_id}/replay` for any events they need re-sent (see API doc `webhooks-reference.md`).\n### Signature verification failures reported by customer\n- This is almost always caused by the customer verifying against a re-serialized JSON body rather than the raw request bytes. Point them to the \"Verifying the signature\" section of `webhooks-reference.md`.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: Webhook Delivery Failure Response",
+      "last_updated": "2026-07-16",
+      "version": "v3.6",
+      "source_file": "runbook-webhook-delivery-failures.md",
+      "doc_id": "RB-WEBHOOK-01",
+      "severity_scope": "SEV3-SEV2",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0033"
+    }
+  },
+  {
+    "page_content": "Runbook: Webhook Delivery Failure Response\n\nagainst a re-serialized JSON body rather than the raw request bytes. Point them to the \"Verifying the signature\" section of `webhooks-reference.md`.\n- Confirm they're using the current signing secret \u2014 secrets rotate if the customer regenerated them and didn't update their code.\n### TLS certificate errors\n- CloudDesk will not deliver to endpoints with expired or self-signed certs. This is by design, not a bug. Direct customer to renew/replace their certificate.\n### Platform-side sender degradation (rare)\n1. Page `#webhooks-oncall`.\n2. Check whether the vector-DB-backed metadata lookup service (used to fetch per-endpoint config) is the bottleneck \u2014 this has been the root cause in 2 of the last 3 sender-side incidents.\n3. If confirmed, fail over to the standby delivery-service region per the platform failover runbook (separate doc).",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: Webhook Delivery Failure Response",
+      "last_updated": "2026-07-16",
+      "version": "v3.6",
+      "source_file": "runbook-webhook-delivery-failures.md",
+      "doc_id": "RB-WEBHOOK-01",
+      "severity_scope": "SEV3-SEV2",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0034"
+    }
+  },
+  {
+    "page_content": "Runbook: Webhook Delivery Failure Response\n\nthe last 3 sender-side incidents.\n3. If confirmed, fail over to the standby delivery-service region per the platform failover runbook (separate doc).\n4. Once resolved, the dead-letter queue drains automatically; do not manually replay in bulk until sender health is confirmed stable for 15 minutes (bulk replay during instability can re-trigger the same failure).",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: Webhook Delivery Failure Response",
+      "last_updated": "2026-07-16",
+      "version": "v3.6",
+      "source_file": "runbook-webhook-delivery-failures.md",
+      "doc_id": "RB-WEBHOOK-01",
+      "severity_scope": "SEV3-SEV2",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0035"
+    }
+  },
+  {
+    "page_content": "Runbook: Webhook Delivery Failure Response\n\nEscalation\n- If unresolved after 30 minutes of triage, or if more than 5 customers are affected simultaneously, escalate to Platform Engineering on-call and open a SEV2 incident.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: Webhook Delivery Failure Response",
+      "last_updated": "2026-07-16",
+      "version": "v3.6",
+      "source_file": "runbook-webhook-delivery-failures.md",
+      "doc_id": "RB-WEBHOOK-01",
+      "severity_scope": "SEV3-SEV2",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0036"
+    }
+  },
+  {
+    "page_content": "Runbook: Webhook Delivery Failure Response\n\nRelated resources\n- API doc: `webhooks-reference.md`\n- Help Center: \"Troubleshooting Failed Webhook Deliveries\" (HC-102)",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: Webhook Delivery Failure Response",
+      "last_updated": "2026-07-16",
+      "version": "v3.6",
+      "source_file": "runbook-webhook-delivery-failures.md",
+      "doc_id": "RB-WEBHOOK-01",
+      "severity_scope": "SEV3-SEV2",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0037"
+    }
+  },
+  {
+    "page_content": "Runbook: API & Database Latency Incident Response\n\n# Runbook: API & Database Latency Incident Response",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: API & Database Latency Incident Response",
+      "last_updated": "2026-04-22",
+      "version": "v3.4",
+      "source_file": "runbook-api-latency-incident.md",
+      "doc_id": "RB-API-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0038"
+    }
+  },
+  {
+    "page_content": "Runbook: API & Database Latency Incident Response\n\nTrigger conditions\n- `p95 API latency > 2s` sustained for 5+ minutes.\n- Customers report `429` errors despite being under their documented rate limit.\n- Ticket queue-server dashboard shows elevated read latency on the primary ticket database.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: API & Database Latency Incident Response",
+      "last_updated": "2026-04-22",
+      "version": "v3.4",
+      "source_file": "runbook-api-latency-incident.md",
+      "doc_id": "RB-API-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0039"
+    }
+  },
+  {
+    "page_content": "Runbook: API & Database Latency Incident Response\n\nTriage\n1. Check `admin/infra/db-primary` for replication lag and connection pool saturation.\n2. Check whether a specific workspace is generating disproportionate load (`admin/infra/top-workspaces-by-qps`) \u2014 a single customer running an unthrottled bulk sync is the most common root cause.\n3. Confirm whether the rate limiter is misfiring: compare the customer's reported 429s against their actual logged request volume in `admin/infra/rate-limit-audit/{workspace_id}`. A mismatch usually indicates the limiter is keying on the wrong identifier after a recent deploy (e.g., keying by IP instead of API key behind a shared NAT).",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: API & Database Latency Incident Response",
+      "last_updated": "2026-04-22",
+      "version": "v3.4",
+      "source_file": "runbook-api-latency-incident.md",
+      "doc_id": "RB-API-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0040"
+    }
+  },
+  {
+    "page_content": "Runbook: API & Database Latency Incident Response\n\nResolution paths\n### Single workspace overloading shared infrastructure\n- Apply a temporary per-workspace throttle via `admin/infra/throttle/{workspace_id}`.\n- Contact the customer's technical owner to recommend batching or using cursor pagination with larger `limit` values instead of tight polling loops.\n### Rate limiter misconfiguration\n- Roll back the most recent rate-limiter deploy if the timing correlates.\n- Manually clear affected customers' rate-limit counters via `admin/infra/rate-limit-reset/{workspace_id}` once the fix is confirmed.\n### Database replication lag\n- Check for a long-running migration or backfill job; pause non-critical batch jobs first.\n- If lag exceeds 60 seconds, page the Data Platform on-call.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: API & Database Latency Incident Response",
+      "last_updated": "2026-04-22",
+      "version": "v3.4",
+      "source_file": "runbook-api-latency-incident.md",
+      "doc_id": "RB-API-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0041"
+    }
+  },
+  {
+    "page_content": "Runbook: API & Database Latency Incident Response\n\nEscalation\n- SEV1 if the primary API is returning elevated 5xx rates platform-wide.\n- SEV2 if isolated to specific endpoints or a subset of workspaces.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: API & Database Latency Incident Response",
+      "last_updated": "2026-04-22",
+      "version": "v3.4",
+      "source_file": "runbook-api-latency-incident.md",
+      "doc_id": "RB-API-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0042"
+    }
+  },
+  {
+    "page_content": "Runbook: API & Database Latency Incident Response\n\nRelated resources\n- API doc: `authentication.md` (rate limit table)\n- API doc: `rest-api-endpoints.md`",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: API & Database Latency Incident Response",
+      "last_updated": "2026-04-22",
+      "version": "v3.4",
+      "source_file": "runbook-api-latency-incident.md",
+      "doc_id": "RB-API-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0043"
+    }
+  },
+  {
+    "page_content": "Runbook: SSO/SAML Authentication Outage Response\n\n# Runbook: SSO/SAML Authentication Outage Response",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: SSO/SAML Authentication Outage Response",
+      "last_updated": "2026-08-01",
+      "version": "v3.6",
+      "source_file": "runbook-sso-saml-incident-response.md",
+      "doc_id": "RB-SSO-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0044"
+    }
+  },
+  {
+    "page_content": "Runbook: SSO/SAML Authentication Outage Response\n\nTrigger conditions\n- Multiple users at one workspace cannot log in via SSO.\n- Alert: `saml_login_failure_rate` for a workspace exceeds 30% over 5 minutes.\n- Customer ticket containing phrases like \"SSO stopped working\", \"SAML login broken\", or \"can't log in after adding a domain\".",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: SSO/SAML Authentication Outage Response",
+      "last_updated": "2026-08-01",
+      "version": "v3.6",
+      "source_file": "runbook-sso-saml-incident-response.md",
+      "doc_id": "RB-SSO-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0045"
+    }
+  },
+  {
+    "page_content": "Runbook: SSO/SAML Authentication Outage Response\n\nTriage (first 5 minutes)\n1. Pull the workspace's recent SAML error codes from `admin/sso/{workspace_id}/errors`.\n2. Match the dominant error code to a path below. **Do not assume the most recently changed configuration (e.g., a newly added domain) is the cause** \u2014 in historical incidents, certificate expiry on the *original*, previously-working domain has been the actual trigger more often than the new domain itself, because admins tend to touch SSO settings around the same time a cert is due to expire.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: SSO/SAML Authentication Outage Response",
+      "last_updated": "2026-08-01",
+      "version": "v3.6",
+      "source_file": "runbook-sso-saml-incident-response.md",
+      "doc_id": "RB-SSO-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0046"
+    }
+  },
+  {
+    "page_content": "Runbook: SSO/SAML Authentication Outage Response\n\nResolution paths by error code\n### `saml_signature_invalid`\n- Check IdP certificate expiry: `admin/sso/{workspace_id}/certificate`. This is the single most common cause of sudden SSO outages.\n- If expired: ask the workspace admin to download a fresh signing certificate from their IdP and re-upload it at Settings \u2192 Security \u2192 SSO.\n- If not expired: confirm the IdP hasn't rotated certificates without notice (common with Azure AD's automatic rollover) \u2014 request the current cert directly from the IdP admin console.\n### `saml_domain_not_verified`\n- Check `admin/sso/{workspace_id}/domains` for the affected domain's status.\n- If a domain was recently added and is `pending`, this is expected \u2014 DNS verification takes up to 24 hours. Direct the customer to confirm the TXT record is published.\n- Remind the customer that `enforce_sso` must be explicitly set per domain; adding a new domain never auto-enforces SSO on it.\n### `saml_clock_skew`",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: SSO/SAML Authentication Outage Response",
+      "last_updated": "2026-08-01",
+      "version": "v3.6",
+      "source_file": "runbook-sso-saml-incident-response.md",
+      "doc_id": "RB-SSO-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0047"
+    }
+  },
+  {
+    "page_content": "Runbook: SSO/SAML Authentication Outage Response\n\nRemind the customer that `enforce_sso` must be explicitly set per domain; adding a new domain never auto-enforces SSO on it.\n### `saml_clock_skew`\n- Ask the customer to confirm their IdP server's NTP sync. CloudDesk allows a 5-minute skew tolerance; anything beyond that fails.\n### `scim_duplicate_external_id`\n- This affects provisioning, not login. Direct to the SCIM directory to de-duplicate the conflicting user record.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: SSO/SAML Authentication Outage Response",
+      "last_updated": "2026-08-01",
+      "version": "v3.6",
+      "source_file": "runbook-sso-saml-incident-response.md",
+      "doc_id": "RB-SSO-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0048"
+    }
+  },
+  {
+    "page_content": "Runbook: SSO/SAML Authentication Outage Response\n\nCommunication\n- For any outage affecting more than 10 users at one workspace, post a status update in `#customer-comms` within 15 minutes so support agents have a holding message before the RAG assistant's confidence threshold routes tickets to them.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: SSO/SAML Authentication Outage Response",
+      "last_updated": "2026-08-01",
+      "version": "v3.6",
+      "source_file": "runbook-sso-saml-incident-response.md",
+      "doc_id": "RB-SSO-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0049"
+    }
+  },
+  {
+    "page_content": "Runbook: SSO/SAML Authentication Outage Response\n\nEscalation\n- SEV1 if SSO is down for an Enterprise-tier workspace during business hours (per their timezone) \u2014 page Identity Platform on-call immediately.\n- SEV2/3 for smaller workspaces or after-hours \u2014 handle within the current shift.",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: SSO/SAML Authentication Outage Response",
+      "last_updated": "2026-08-01",
+      "version": "v3.6",
+      "source_file": "runbook-sso-saml-incident-response.md",
+      "doc_id": "RB-SSO-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0050"
+    }
+  },
+  {
+    "page_content": "Runbook: SSO/SAML Authentication Outage Response\n\nRelated resources\n- API doc: `saml-scim-reference.md`\n- Help Center: \"Setting Up Single Sign-On (SSO) with SAML\" (HC-103)",
+    "metadata": {
+      "source_type": "engineering_runbook",
+      "title": "Runbook: SSO/SAML Authentication Outage Response",
+      "last_updated": "2026-08-01",
+      "version": "v3.6",
+      "source_file": "runbook-sso-saml-incident-response.md",
+      "doc_id": "RB-SSO-01",
+      "severity_scope": "SEV3-SEV1",
+      "audience": "internal (engineering / support escalation)",
+      "chunk_id": "runbook_0051"
+    }
+  },
+  {
+    "page_content": "Integrating CloudDesk with Slack\n\nIntegrating CloudDesk with Slack\nDoc ID: HC-101  |  Source type: help_center_article  |  Title: Integrating CloudDesk with Slack  |  Last updated: 2026-06-18  |\nVersion: v3.6\nCloudDesk can post real-time notifications to Slack whenever a ticket is created, updated, or replied to \u2014\nkeeping your team in the loop without needing to check the dashboard.\nStep 1: Connect your Slack workspace\nGo to Settings \u2192 Integrations \u2192 Slack \u2192 Connect. You'll be redirected to Slack to authorize CloudDesk.\nApprove the requested scopes (chat:write, channels:read).\nStep 2: Choose a default channel\nAfter authorization, select the Slack channel that should receive new-ticket alerts by default. You can add\nmore granular routing rules afterward (see Step 3).\nStep 3: Set up routing rules (optional)\nUnder Settings \u2192 Integrations \u2192 Slack \u2192 Routing Rules, map specific ticket tags or categories to specific\nchannels. For example, route 'Billing' tickets to #billing-support and 'Technical' tickets to #tech-support.",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Integrating CloudDesk with Slack",
+      "last_updated": "2026-06-18",
+      "version": "v3.6",
+      "source_file": "HC-101_integrating-clouddesk-with-slack.pdf",
+      "doc_id": "HC-101",
+      "chunk_id": "hc_art_0052"
+    }
+  },
+  {
+    "page_content": "Integrating CloudDesk with Slack\n\nticket tags or categories to specific\nchannels. For example, route 'Billing' tickets to #billing-support and 'Technical' tickets to #tech-support.\nYou can also choose which events post to Slack: new ticket, customer reply, ticket resolved, and SLA\nbreach warnings are all available independently.\nTroubleshooting\n\u25cf\nMessages stopped posting suddenly: This is most often an expired OAuth scope after a Slack\nworkspace admin change. Reconnect under Settings \u2192 Integrations \u2192 Slack and re-select your\nchannel.\n\u25cf\nIntegration shows 'disconnected' after enabling SSO: If the original Slack connection was\nauthorized by a personal user account, enforcing SSO or SCIM provisioning can invalidate that\ngrant. Reconnect using a dedicated service account so the integration doesn't depend on any one\nperson's login.\n\u25cf\nDuplicate notifications for one ticket: Check Routing Rules for overlapping rules pointing to the\nsame channel \u2014 remove the duplicate.\n\u25cf",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Integrating CloudDesk with Slack",
+      "last_updated": "2026-06-18",
+      "version": "v3.6",
+      "source_file": "HC-101_integrating-clouddesk-with-slack.pdf",
+      "doc_id": "HC-101",
+      "chunk_id": "hc_art_0053"
+    }
+  },
+  {
+    "page_content": "Integrating CloudDesk with Slack\n\nlogin.\n\u25cf\nDuplicate notifications for one ticket: Check Routing Rules for overlapping rules pointing to the\nsame channel \u2014 remove the duplicate.\n\u25cf\nOnly seeing new tickets, not customer replies: Add the 'Customer Replied' event to your routing\nrule; by default only 'New Ticket' is enabled.\nRelated articles: Setting Up Single Sign-On (SSO) with SAML, Managing API Keys and Rate Limits.",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Integrating CloudDesk with Slack",
+      "last_updated": "2026-06-18",
+      "version": "v3.6",
+      "source_file": "HC-101_integrating-clouddesk-with-slack.pdf",
+      "doc_id": "HC-101",
+      "chunk_id": "hc_art_0054"
+    }
+  },
+  {
+    "page_content": "Billing, Plans, and Seat Management\n\nBilling, Plans, and Seat Management\nDoc ID: HC-105  |  Source type: help_center_article  |  Title: Billing, Plans, and Seat Management  |  Last updated: 2026-05-28  |\nVersion: v3.5\nThis article covers plans, seats, and billing for your CloudDesk workspace.\nPlans overview\nPlan\nBest for\nAPI rate limit\nStandard\nSmall support teams\n60 req/min\nGrowth\nScaling teams with automations\n300 req/min\nEnterprise\nLarge orgs needing SSO/SCIM\n1,200 req/min\nAdding or removing seats\nGo to Settings \u2192 Billing \u2192 Seats \u2192 Add Seats. New seats are prorated for the remainder of your current\nbilling cycle. Deactivated agent accounts should be fully removed (not just deactivated) to stop being\ncounted toward your seat total.\nChanging plans\nUpgrades take effect immediately; downgrades take effect at your next renewal date to avoid losing access\nto features mid-cycle.\nAnnual billing\nSwitching from monthly to annual billing gives a 15% discount, effective at your next billing cycle.\nData retention",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Billing, Plans, and Seat Management",
+      "last_updated": "2026-05-28",
+      "version": "v3.5",
+      "source_file": "HC-105_billing-plans-and-seat-management.pdf",
+      "doc_id": "HC-105",
+      "chunk_id": "hc_art_0055"
+    }
+  },
+  {
+    "page_content": "Billing, Plans, and Seat Management\n\nmid-cycle.\nAnnual billing\nSwitching from monthly to annual billing gives a 15% discount, effective at your next billing cycle.\nData retention\nResolved tickets are retained indefinitely by default. Configure a custom retention window under Settings \u2192\nData Retention if required for your compliance needs.",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Billing, Plans, and Seat Management",
+      "last_updated": "2026-05-28",
+      "version": "v3.5",
+      "source_file": "HC-105_billing-plans-and-seat-management.pdf",
+      "doc_id": "HC-105",
+      "chunk_id": "hc_art_0056"
+    }
+  },
+  {
+    "page_content": "Managing API Keys and Rate Limits\n\nManaging API Keys and Rate Limits\nDoc ID: HC-104  |  Source type: help_center_article  |  Title: Managing API Keys and Rate Limits  |  Last updated: 2026-06-05  |\nVersion: v3.6\nAPI keys let your applications authenticate with the CloudDesk API. This article covers creating, rotating,\nand understanding rate limits for your keys.\nCreating a key\nGo to Settings \u2192 Developer \u2192 API Keys \u2192 Create Key. Choose whether the key is for production (cd_live_)\nor sandbox testing (cd_test_). Sandbox data is fully isolated from your production workspace.\nRate limits by plan\nPlan\nRequests per minute per key\nStandard\n60\nGrowth\n300\nEnterprise\n1,200\nExceeding your limit returns a 429 response with a Retry-After header. Implement exponential backoff rather\nthan retrying immediately.\nRotating a key safely\nGenerate a new key before revoking the old one. Old keys remain valid for 24 hours after a replacement is\ncreated, giving you a safe window to update your integration with zero downtime.\nTroubleshooting\n\u25cf",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Managing API Keys and Rate Limits",
+      "last_updated": "2026-06-05",
+      "version": "v3.6",
+      "source_file": "HC-104_managing-api-keys-and-rate-limits.pdf",
+      "doc_id": "HC-104",
+      "chunk_id": "hc_art_0057"
+    }
+  },
+  {
+    "page_content": "Managing API Keys and Rate Limits\n\nremain valid for 24 hours after a replacement is\ncreated, giving you a safe window to update your integration with zero downtime.\nTroubleshooting\n\u25cf\n429 errors despite being under your limit: Contact support \u2014 this can indicate a rate-limiter issue\non our side, especially if your traffic comes through a shared corporate NAT.\n\u25cf\nresource_not_found for a ticket you can see in the UI: Double check you're using a live key\n(cd_live_) and not a sandbox key against production data.\n\u25cf\nOAuth invalid_grant errors: Authorization codes expire after 60 seconds and can only be used\nonce.\nRelated: API Documentation \u2014 Authentication.",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Managing API Keys and Rate Limits",
+      "last_updated": "2026-06-05",
+      "version": "v3.6",
+      "source_file": "HC-104_managing-api-keys-and-rate-limits.pdf",
+      "doc_id": "HC-104",
+      "chunk_id": "hc_art_0058"
+    }
+  },
+  {
+    "page_content": "Setting Up Single Sign-On (SSO) with SAML\n\nSetting Up Single Sign-On (SSO) with SAML\nDoc ID: HC-103  |  Source type: help_center_article  |  Title: Setting Up Single Sign-On (SSO) with SAML  |  Last updated:\n2026-07-30  |  Version: v3.6\nSingle Sign-On (SSO) lets your team log in to CloudDesk using your existing identity provider (Okta, Azure\nAD, OneLogin, Google Workspace) instead of a separate password.\nSetting up SAML\n\u25cf\nIn your IdP, create a new SAML application and enter CloudDesk's Service Provider metadata URL\n(found under Settings \u2192 Security \u2192 SSO).\n\u25cf\nMap the required NameID attribute to the user's email address.\n\u25cf\nDownload the IdP's signing certificate and upload it to CloudDesk under Settings \u2192 Security \u2192\nSSO \u2192 Identity Provider Certificate.\n\u25cf\nVerify your domain (see below) before enforcing SSO.\nVerifying a domain\nSSO is enforced per verified domain, not per workspace. Add a domain under Settings \u2192 Security \u2192 SSO\n\u2192 Domains, then add the provided TXT record to your DNS. Verification can take up to 24 hours.",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Setting Up Single Sign-On (SSO) with SAML",
+      "last_updated": "2026-07-30",
+      "version": "v3.6",
+      "source_file": "HC-103_setting-up-sso-with-saml.pdf",
+      "doc_id": "HC-103",
+      "chunk_id": "hc_art_0059"
+    }
+  },
+  {
+    "page_content": "Setting Up Single Sign-On (SSO) with SAML\n\nAdd a domain under Settings \u2192 Security \u2192 SSO\n\u2192 Domains, then add the provided TXT record to your DNS. Verification can take up to 24 hours.\nImportant: adding a new domain to a workspace that already has SSO does not automatically enforce SSO\non that new domain. You must explicitly enable enforcement for each domain separately once it's verified.\nWhy did SSO suddenly stop working?\nThe most common cause of a sudden SSO outage is an expired or rotated IdP signing certificate \u2014 not a\nrecent domain change. If your team added a new domain around the same time SSO broke, check your\ncertificate expiry first; certificates typically need renewal every 1\u20133 years and some IdPs (like Azure AD) can\nauto-rotate them without notice.\nOther things to check: server clock sync (CloudDesk allows up to 5 minutes of skew) and whether your\ndomain has actually completed verification.\nSCIM user provisioning\nCloudDesk also supports SCIM for automatic user provisioning and deprovisioning. Deactivating a user in",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Setting Up Single Sign-On (SSO) with SAML",
+      "last_updated": "2026-07-30",
+      "version": "v3.6",
+      "source_file": "HC-103_setting-up-sso-with-saml.pdf",
+      "doc_id": "HC-103",
+      "chunk_id": "hc_art_0060"
+    }
+  },
+  {
+    "page_content": "Setting Up Single Sign-On (SSO) with SAML\n\nverification.\nSCIM user provisioning\nCloudDesk also supports SCIM for automatic user provisioning and deprovisioning. Deactivating a user in\nyour IdP revokes their CloudDesk sessions within 5 minutes.\nRelated: API Documentation \u2014 SAML & SCIM Configuration Reference. Engineering Runbook \u2014\nSSO/SAML Authentication Outage Response.",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Setting Up Single Sign-On (SSO) with SAML",
+      "last_updated": "2026-07-30",
+      "version": "v3.6",
+      "source_file": "HC-103_setting-up-sso-with-saml.pdf",
+      "doc_id": "HC-103",
+      "chunk_id": "hc_art_0061"
+    }
+  },
+  {
+    "page_content": "Troubleshooting Failed Webhook Deliveries\n\nTroubleshooting Failed Webhook Deliveries\nDoc ID: HC-102  |  Source type: help_center_article  |  Title: Troubleshooting Failed Webhook Deliveries  |  Last updated:\n2026-07-15  |  Version: v3.6\nWebhooks let external systems receive real-time updates from CloudDesk. This article covers the most\ncommon delivery problems and how to fix them.\nHow webhook delivery works\nWhen an event occurs, CloudDesk sends an HTTPS POST to your configured endpoint. If your endpoint\ndoesn't respond with a 2xx status within 10 seconds, CloudDesk retries on a backoff schedule: 1 minute, 5\nminutes, 30 minutes, 2 hours, then 12 hours \u2014 six attempts total.\nIf more than 20 consecutive events fail, the webhook is automatically disabled and must be manually\nre-enabled from the Webhooks dashboard.\nCommon problems and fixes\n1. Webhooks arriving late or not at all\nUsually means your endpoint is timing out or returning errors. Acknowledge the webhook immediately with a",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Troubleshooting Failed Webhook Deliveries",
+      "last_updated": "2026-07-15",
+      "version": "v3.6",
+      "source_file": "HC-102_troubleshooting-failed-webhook-deliveries.pdf",
+      "doc_id": "HC-102",
+      "chunk_id": "hc_art_0062"
+    }
+  },
+  {
+    "page_content": "Troubleshooting Failed Webhook Deliveries\n\nWebhooks arriving late or not at all\nUsually means your endpoint is timing out or returning errors. Acknowledge the webhook immediately with a\n200 response, then process the payload asynchronously rather than doing slow work inline.\n2. Signature verification always fails\nThe most common cause is verifying against a re-serialized JSON object instead of the raw request body \u2014\neven whitespace or key-order differences will break the HMAC comparison. Always verify against the raw\nbytes received.\n3. Webhook got automatically disabled\nThis happens after 20+ consecutive failures, commonly due to an expired TLS certificate on your endpoint.\nRenew your certificate, then re-enable the webhook and use the event replay endpoint to recover any\nmissed events.\n4. Firewall blocking deliveries\nIf your security team allowlists inbound IPs, make sure CloudDesk's current sending ranges (available via\nthe API) are included.\n5. Bulk payloads look truncated",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Troubleshooting Failed Webhook Deliveries",
+      "last_updated": "2026-07-15",
+      "version": "v3.6",
+      "source_file": "HC-102_troubleshooting-failed-webhook-deliveries.pdf",
+      "doc_id": "HC-102",
+      "chunk_id": "hc_art_0063"
+    }
+  },
+  {
+    "page_content": "Troubleshooting Failed Webhook Deliveries\n\nteam allowlists inbound IPs, make sure CloudDesk's current sending ranges (available via\nthe API) are included.\n5. Bulk payloads look truncated\nPayloads over 512 KB (e.g., bulk ticket updates) are split across multiple deliveries with a page field. Make\nsure your handler reassembles paginated payloads.\nRelated: API Documentation \u2014 Webhooks Reference. Engineering Runbook \u2014 Webhook Delivery Failure\nResponse.",
+    "metadata": {
+      "source_type": "help_center_article",
+      "title": "Troubleshooting Failed Webhook Deliveries",
+      "last_updated": "2026-07-15",
+      "version": "v3.6",
+      "source_file": "HC-102_troubleshooting-failed-webhook-deliveries.pdf",
+      "doc_id": "HC-102",
+      "chunk_id": "hc_art_0064"
+    }
+  },
+  {
+    "page_content": "Release Notes \u2014 v3.5.0\n\nRelease Notes \u2014 v3.5.0\nDoc ID: RN-3.5.0  |  Source type: release_notes  |  Title: Release Notes \u2014 v3.5.0  |  Release date: 2026-05-25  |  Version: v3.5.0\nNew features\n\u25cf\nAnnual billing option added with a 15% discount versus monthly billing.\n\u25cf\nNew REST endpoints for Teams routing rules (GET /teams/{id}).\n\u25cf\nItemized invoice export (Settings \u2192 Billing \u2192 Invoices \u2192 Export).\nImprovements\n\u25cf\nCursor pagination limit raised from 50 to 100 for all list endpoints.\n\u25cf\nError responses now include a request_id field in every error envelope for easier support escalation.\nBug fixes\n\u25cf\nFixed a bug where older SDK versions (pre-2.3) stripped the request_id from error responses.\n\u25cf\nFixed downgrade timing so plan downgrades now correctly apply at next renewal instead of\nimmediately.\nKnown issues\n\u25cf\nRate limiter may key on IP address instead of API key for requests behind certain shared NAT\nconfigurations \u2014 fix scheduled for v3.6.0.",
+    "metadata": {
+      "source_type": "release_notes",
+      "title": "Release Notes \u2014 v3.5.0",
+      "last_updated": "2026-05-25",
+      "version": "v3.5.0",
+      "source_file": "RN-3.5.0_release-notes.pdf",
+      "doc_id": "RN-3.5.0",
+      "chunk_id": "rel_note_0065"
+    }
+  },
+  {
+    "page_content": "Release Notes \u2014 v3.4.0\n\nRelease Notes \u2014 v3.4.0\nDoc ID: RN-3.4.0  |  Source type: release_notes  |  Title: Release Notes \u2014 v3.4.0  |  Release date: 2026-04-20  |  Version: v3.4.0\nNew features\n\u25cf\nBulk ticket update endpoint (PATCH multiple tickets in one call), emitting a single\ntickets.bulk_updated webhook event.\n\u25cf\nAdmin infra dashboard: per-workspace throttle controls for temporary rate-limit exceptions during\nlarge migrations.\nImprovements\n\u25cf\nDatabase read replica added for the ticket search index, reducing p95 search latency by ~35%.\n\u25cf\nRate-limit audit tooling (admin/infra/rate-limit-audit) added to help diagnose mismatched 429\nreports.\nBug fixes\n\u25cf\nFixed an issue where bulk webhook payloads over 512 KB were silently dropped instead of being\npaginated.\n\u25cf\nFixed incorrect seat counts on invoices for deactivated-but-not-removed agent accounts.",
+    "metadata": {
+      "source_type": "release_notes",
+      "title": "Release Notes \u2014 v3.4.0",
+      "last_updated": "2026-04-20",
+      "version": "v3.4.0",
+      "source_file": "RN-3.4.0_release-notes.pdf",
+      "doc_id": "RN-3.4.0",
+      "chunk_id": "rel_note_0066"
+    }
+  },
+  {
+    "page_content": "Release Notes \u2014 v3.6.0\n\nRelease Notes \u2014 v3.6.0\nDoc ID: RN-3.6.0  |  Source type: release_notes  |  Title: Release Notes \u2014 v3.6.0  |  Release date: 2026-07-30  |  Version: v3.6.0\nNew features\n\u25cf\nPer-domain SSO enforcement: the enforce_sso flag can now be set independently for each verified\ndomain in a workspace (PATCH /v1/sso/domains/{domain_id}).\n\u25cf\nWebhook event replay endpoint: POST /v1/webhooks/{webhook_id}/events/{event_id}/replay to\nresend a single missed event.\n\u25cf\nSAML & SCIM Configuration Reference published for administrators integrating Okta, Azure AD,\nOneLogin, and Google Workspace.\nImprovements\n\u25cf\nSlack integration now supports service-account-based connections so the integration no longer\nbreaks when the connecting user's SSO/SCIM status changes.\n\u25cf\nWebhook signing secret rotation no longer requires disabling the webhook first.\nBug fixes\n\u25cf\nFixed the rate limiter keying bug from v3.5.0 that caused false 429s for requests behind shared\nNATs \u2014 now keys strictly on API key.\n\u25cf",
+    "metadata": {
+      "source_type": "release_notes",
+      "title": "Release Notes \u2014 v3.6.0",
+      "last_updated": "2026-07-30",
+      "version": "v3.6.0",
+      "source_file": "RN-3.6.0_release-notes.pdf",
+      "doc_id": "RN-3.6.0",
+      "chunk_id": "rel_note_0067"
+    }
+  },
+  {
+    "page_content": "Release Notes \u2014 v3.6.0\n\nfixes\n\u25cf\nFixed the rate limiter keying bug from v3.5.0 that caused false 429s for requests behind shared\nNATs \u2014 now keys strictly on API key.\n\u25cf\nFixed a bug where SCIM deactivation did not consistently revoke sessions within the documented\n5-minute window.\nSecurity\n\u25cf\nImproved webhook TLS validation to reject self-signed and expired certificates at delivery time\nrather than queuing indefinite retries.",
+    "metadata": {
+      "source_type": "release_notes",
+      "title": "Release Notes \u2014 v3.6.0",
+      "last_updated": "2026-07-30",
+      "version": "v3.6.0",
+      "source_file": "RN-3.6.0_release-notes.pdf",
+      "doc_id": "RN-3.6.0",
+      "chunk_id": "rel_note_0068"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10021] Subject: Slack messages not posting to channel\nQuestion: We connected CloudDesk to Slack but new tickets aren't showing up in #support-alerts.\nResolution: Confirmed the OAuth token had an expired scope after a Slack workspace admin change. Reconnected the integration under Settings > Integrations > Slack and re-selected the channel; messages resumed within a minute.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10021: Slack messages not posting to channel",
+      "chunk_id": "ticket_tkt_10021",
+      "last_updated": "2026-01-08",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Integrating CloudDesk with Slack"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10022] Subject: How do I map tickets to specific Slack channels\nQuestion: Can different ticket categories go to different Slack channels?\nResolution: Yes \u2014 under Settings > Integrations > Slack > Routing Rules you can map a ticket tag or category to a specific channel. Walked customer through creating two rules for Billing and Technical tags.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10022: How do I map tickets to specific Slack channels",
+      "chunk_id": "ticket_tkt_10022",
+      "last_updated": "2026-01-11",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Integrating CloudDesk with Slack"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10023] Subject: Slack app shows disconnected after SSO rollout\nQuestion: After enabling SSO for our workspace, the Slack integration shows 'disconnected' status.\nResolution: SSO changes revoked the original OAuth grant since it was tied to a user account that is now provisioned via SCIM. Reconnected using a service account and confirmed persistence.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10023: Slack app shows disconnected after SSO rollout",
+      "chunk_id": "ticket_tkt_10023",
+      "last_updated": "2026-01-14",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Integrating CloudDesk with Slack"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10031] Subject: Webhooks arriving 2+ hours late\nQuestion: Our webhook receiver is getting events hours after they happen, not in real time.\nResolution: Checked delivery attempts and found the endpoint was returning 504s intermittently, triggering the retry backoff schedule (up to 12h between later attempts). Recommended acknowledging the webhook immediately and processing asynchronously.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10031: Webhooks arriving 2+ hours late",
+      "chunk_id": "ticket_tkt_10031",
+      "last_updated": "2026-01-16",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Webhooks Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10032] Subject: Signature verification always fails\nQuestion: Every webhook we receive fails HMAC signature verification even though we copied the secret correctly.\nResolution: Root cause was verifying against a re-parsed/re-serialized JSON object instead of the raw request body bytes, which changes key ordering. Provided a code sample using the raw payload.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10032: Signature verification always fails",
+      "chunk_id": "ticket_tkt_10032",
+      "last_updated": "2026-01-19",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Webhooks Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10033] Subject: Webhook got auto-disabled\nQuestion: Our webhook endpoint stopped receiving anything and the dashboard shows it as disabled.\nResolution: 20+ consecutive deliveries failed (expired TLS cert on customer endpoint) which auto-disables the webhook. Customer renewed the cert; re-enabled the webhook and replayed the last 15 missed events.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10033: Webhook got auto-disabled",
+      "chunk_id": "ticket_tkt_10033",
+      "last_updated": "2026-01-22",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "engineering_runbook",
+      "source_title_reference": "Webhook Delivery Failure Response"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10034] Subject: My SAML login stopped working after adding a new domain\nQuestion: We added a second domain to our workspace last week and now some of our users can't log in via SSO.\nResolution: Investigated and found the *original* domain's IdP signing certificate had actually expired around the same time, which was the real cause \u2014 the new domain was still pending its own DNS verification and was never the trigger. Guided admin to re-upload the current IdP cert.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10034: My SAML login stopped working after adding a new domain",
+      "chunk_id": "ticket_tkt_10034",
+      "last_updated": "2026-01-25",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "engineering_runbook",
+      "source_title_reference": "SSO/SAML Authentication Outage Response"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10041] Subject: SAML signature invalid error\nQuestion: Getting 'saml_signature_invalid' for all users trying to log in this morning.\nResolution: IdP certificate had expired overnight (1-year rotation). Walked admin through downloading the renewed cert from Okta and uploading it under Settings > Security > SSO.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10041: SAML signature invalid error",
+      "chunk_id": "ticket_tkt_10041",
+      "last_updated": "2026-01-27",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "SAML & SCIM Configuration Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10042] Subject: New domain not enforcing SSO\nQuestion: We verified our new domain but users on it can still log in with a plain password.\nResolution: Domain verification alone doesn't enforce SSO. Set the enforce_sso flag via PATCH /v1/sso/domains/{domain_id} for the new domain; confirmed password login was blocked afterward.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10042: New domain not enforcing SSO",
+      "chunk_id": "ticket_tkt_10042",
+      "last_updated": "2026-01-29",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "SAML & SCIM Configuration Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10043] Subject: SCIM duplicate external ID error\nQuestion: Provisioning a new user via SCIM throws scim_duplicate_external_id.\nResolution: Found two records in the IdP directory sharing the same externalId after a prior HR system migration. Customer de-duplicated in their directory and the sync succeeded.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10043: SCIM duplicate external ID error",
+      "chunk_id": "ticket_tkt_10043",
+      "last_updated": "2026-02-02",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "SAML & SCIM Configuration Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10044] Subject: Clock skew SAML error\nQuestion: Random SAML failures, error code mentions clock skew.\nResolution: Confirmed IdP server NTP sync had drifted 7 minutes. Customer resynced NTP and failures stopped.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10044: Clock skew SAML error",
+      "chunk_id": "ticket_tkt_10044",
+      "last_updated": "2026-02-04",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "SAML & SCIM Configuration Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10051] Subject: Getting 429 errors under normal usage\nQuestion: We're well under our documented rate limit but still getting 429 responses.\nResolution: Rate limiter was keying on IP address instead of API key after a recent deploy, and the customer sits behind a shared corporate NAT. Escalated to platform team; limiter fix deployed and counters reset.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10051: Getting 429 errors under normal usage",
+      "chunk_id": "ticket_tkt_10051",
+      "last_updated": "2026-02-06",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "engineering_runbook",
+      "source_title_reference": "API & Database Latency Incident Response"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10052] Subject: How to rotate an API key without downtime\nQuestion: Need to rotate our production API key without breaking our integration.\nResolution: Explained that old keys stay valid for 24 hours after a new key is generated, so both can run in parallel during cutover. Customer rotated successfully.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10052: How to rotate an API key without downtime",
+      "chunk_id": "ticket_tkt_10052",
+      "last_updated": "2026-02-09",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Authentication"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10053] Subject: OAuth redirect_uri_mismatch\nQuestion: Our OAuth integration suddenly fails with redirect_uri_mismatch.\nResolution: Customer's app had switched to a new subdomain and the registered redirect URI still pointed to the old one, including a missing trailing slash. Corrected the registration.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10053: OAuth redirect_uri_mismatch",
+      "chunk_id": "ticket_tkt_10053",
+      "last_updated": "2026-02-11",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Authentication"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10054] Subject: invalid_grant on OAuth token exchange\nQuestion: Token exchange fails with invalid_grant intermittently.\nResolution: Authorization codes expire after 60 seconds and can only be used once; customer's server had a queuing delay before exchanging the code. Recommended exchanging immediately upon redirect.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10054: invalid_grant on OAuth token exchange",
+      "chunk_id": "ticket_tkt_10054",
+      "last_updated": "2026-02-13",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Authentication"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10061] Subject: How do I add more agent seats\nQuestion: We hired 3 more support agents and need more seats on our plan.\nResolution: Walked customer through Settings > Billing > Seats > Add Seats; seats are prorated for the remainder of the billing cycle.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10061: How do I add more agent seats",
+      "chunk_id": "ticket_tkt_10061",
+      "last_updated": "2026-02-16",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Billing, Plans, and Seat Management"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10062] Subject: Downgrade from Growth to Standard\nQuestion: We want to downgrade our plan at renewal.\nResolution: Confirmed downgrade takes effect at the next billing cycle and explained the feature differences (lower rate limit, fewer automation rules). Scheduled the downgrade.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10062: Downgrade from Growth to Standard",
+      "chunk_id": "ticket_tkt_10062",
+      "last_updated": "2026-02-18",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Billing, Plans, and Seat Management"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10063] Subject: Invoice shows wrong seat count\nQuestion: Our latest invoice charges for 45 seats but we only have 40 active agents.\nResolution: Found 5 deactivated-but-not-removed agent accounts still counted as seats. Removed them and issued a prorated credit.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10063: Invoice shows wrong seat count",
+      "chunk_id": "ticket_tkt_10063",
+      "last_updated": "2026-02-20",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Billing, Plans, and Seat Management"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10071] Subject: How to set up ticket auto-assignment\nQuestion: Can tickets be automatically assigned to agents based on category?\nResolution: Directed to Settings > Automations > Assignment Rules and helped configure round-robin assignment for the 'Billing' category.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10071: How to set up ticket auto-assignment",
+      "chunk_id": "ticket_tkt_10071",
+      "last_updated": "2026-02-23",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Billing, Plans, and Seat Management"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10072] Subject: API returns resource_not_found for valid ticket\nQuestion: GET /tickets/{id} returns resource_not_found for a ticket I can see in the UI.\nResolution: Customer was using a sandbox API key (cd_test_) against a production ticket ID. Confirmed key type and had them switch to a live key.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10072: API returns resource_not_found for valid ticket",
+      "chunk_id": "ticket_tkt_10072",
+      "last_updated": "2026-02-25",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "REST API Endpoints Overview"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10073] Subject: Bulk webhook payload seems truncated\nQuestion: Our tickets.bulk_updated webhook payload looks cut off compared to what we expect.\nResolution: Payloads over 512 KB are chunked with a page field per the webhook spec; customer wasn't handling pagination on bulk events. Provided reassembly logic.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10073: Bulk webhook payload seems truncated",
+      "chunk_id": "ticket_tkt_10073",
+      "last_updated": "2026-02-27",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Webhooks Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10081] Subject: Users logged out unexpectedly after SCIM update\nQuestion: Several users got signed out right after we ran a SCIM sync.\nResolution: Confirmed this is expected: deactivating/reactivating a user via SCIM revokes active sessions within 5 minutes as a security measure. No action needed; reactivated users simply log in again.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10081: Users logged out unexpectedly after SCIM update",
+      "chunk_id": "ticket_tkt_10081",
+      "last_updated": "2026-03-02",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "SAML & SCIM Configuration Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10082] Subject: Firewall blocking CloudDesk webhooks\nQuestion: Our security team's firewall is blocking incoming webhook calls.\nResolution: Directed customer to /v1/meta/webhook-ips to allowlist CloudDesk's current sending IP ranges.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10082: Firewall blocking CloudDesk webhooks",
+      "chunk_id": "ticket_tkt_10082",
+      "last_updated": "2026-03-05",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Webhooks Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10091] Subject: Duplicate Slack notifications for one ticket\nQuestion: We're getting the same Slack alert twice for a single new ticket.\nResolution: Customer had configured two overlapping routing rules pointing to the same channel. Removed the duplicate rule.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10091: Duplicate Slack notifications for one ticket",
+      "chunk_id": "ticket_tkt_10091",
+      "last_updated": "2026-03-08",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Integrating CloudDesk with Slack"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10092] Subject: What happens to a revoked API key mid-request\nQuestion: If we revoke a key while a request is in flight, does it complete?\nResolution: Explained that revocation is immediate \u2014 in-flight requests using the revoked key return 401 Unauthorized rather than completing.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10092: What happens to a revoked API key mid-request",
+      "chunk_id": "ticket_tkt_10092",
+      "last_updated": "2026-03-10",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Authentication"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10101] Subject: Azure AD certificate auto-rotated, SSO broke\nQuestion: SSO broke overnight and we didn't change anything on our end.\nResolution: Azure AD had performed an automatic certificate rollover. Retrieved the current cert from the Azure admin console and uploaded it to CloudDesk.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10101: Azure AD certificate auto-rotated, SSO broke",
+      "chunk_id": "ticket_tkt_10101",
+      "last_updated": "2026-03-13",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "engineering_runbook",
+      "source_title_reference": "SSO/SAML Authentication Outage Response"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10102] Subject: How to replay a single missed webhook event\nQuestion: One event never arrived \u2014 can we get just that one resent without replaying everything?\nResolution: Used POST /v1/webhooks/{id}/events/{event_id}/replay to resend the single event; confirmed receipt with the customer.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10102: How to replay a single missed webhook event",
+      "chunk_id": "ticket_tkt_10102",
+      "last_updated": "2026-03-16",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Webhooks Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10103] Subject: Difference between Standard and Growth rate limits\nQuestion: What API rate limit do we get if we upgrade to Growth?\nResolution: Explained Standard is 60 req/min per key, Growth is 300 req/min per key, and Enterprise is 1,200 req/min per key.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10103: Difference between Standard and Growth rate limits",
+      "chunk_id": "ticket_tkt_10103",
+      "last_updated": "2026-03-19",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Authentication"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10104] Subject: Where to find API request_id for a failed call\nQuestion: Support asked for a request_id but I don't see it in my error.\nResolution: Showed customer the error envelope structure \u2014 request_id is included in every error response body for correlating with server logs.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10104: Where to find API request_id for a failed call",
+      "chunk_id": "ticket_tkt_10104",
+      "last_updated": "2026-03-22",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "REST API Endpoints Overview"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10111] Subject: Webhook TLS handshake failing\nQuestion: Deliveries to our endpoint fail with a TLS error.\nResolution: Customer's certificate had expired 2 days prior. CloudDesk will not deliver to endpoints with invalid TLS by design. Customer renewed the cert and deliveries resumed automatically.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10111: Webhook TLS handshake failing",
+      "chunk_id": "ticket_tkt_10111",
+      "last_updated": "2026-03-25",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "engineering_runbook",
+      "source_title_reference": "Webhook Delivery Failure Response"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10112] Subject: Can we require SSO for only one domain\nQuestion: We have two domains in our workspace but only want to force SSO for one.\nResolution: Confirmed enforce_sso is set per verified domain, so this is supported out of the box \u2014 set the flag only on the target domain.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10112: Can we require SSO for only one domain",
+      "chunk_id": "ticket_tkt_10112",
+      "last_updated": "2026-03-28",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "SAML & SCIM Configuration Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10113] Subject: Sandbox data leaking into production reports\nQuestion: Test data seems to be showing up in our production dashboards.\nResolution: Customer was using a cd_test_ sandbox key for some production integrations. Sandbox data is isolated by design; migrated the integration to a live key and confirmed dashboards cleared.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10113: Sandbox data leaking into production reports",
+      "chunk_id": "ticket_tkt_10113",
+      "last_updated": "2026-04-01",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Authentication"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10121] Subject: Rate of failed webhook deliveries spiking platform-wide\nQuestion: Multiple of our webhooks across different environments are failing around the same time.\nResolution: This coincided with a platform-side sender degradation traced to the metadata lookup service; failed over to the standby region. Dead-letter queue drained automatically once resolved.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10121: Rate of failed webhook deliveries spiking platform-wide",
+      "chunk_id": "ticket_tkt_10121",
+      "last_updated": "2026-04-04",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "engineering_runbook",
+      "source_title_reference": "Webhook Delivery Failure Response"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10122] Subject: Need itemized invoice for finance team\nQuestion: Finance needs a breakdown of seats vs. add-ons on our invoice.\nResolution: Generated an itemized invoice export from Settings > Billing > Invoices > Export and walked through each line item.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10122: Need itemized invoice for finance team",
+      "chunk_id": "ticket_tkt_10122",
+      "last_updated": "2026-04-07",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Billing, Plans, and Seat Management"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10123] Subject: How long are resolved tickets retained\nQuestion: Is there a retention limit on resolved ticket data?\nResolution: Confirmed resolved tickets are retained indefinitely unless a workspace-level data retention policy is configured under Settings > Data Retention.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10123: How long are resolved tickets retained",
+      "chunk_id": "ticket_tkt_10123",
+      "last_updated": "2026-04-10",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Billing, Plans, and Seat Management"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10131] Subject: Getting logged out every hour via SSO\nQuestion: Users on SSO are being logged out roughly every 60 minutes.\nResolution: This matched expected OAuth access token expiry (1 hour) combined with the customer's IdP not silently refreshing sessions. Recommended enabling silent re-authentication in their IdP config.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10131: Getting logged out every hour via SSO",
+      "chunk_id": "ticket_tkt_10131",
+      "last_updated": "2026-04-13",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Authentication"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10132] Subject: Do webhooks fire for bulk API updates\nQuestion: If we update 100 tickets via the API at once, do we get 100 webhook events?\nResolution: Confirmed bulk updates emit a single tickets.bulk_updated event (chunked if over 512 KB) rather than one event per ticket.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10132: Do webhooks fire for bulk API updates",
+      "chunk_id": "ticket_tkt_10132",
+      "last_updated": "2026-04-16",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Webhooks Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10133] Subject: Need higher rate limit temporarily for migration\nQuestion: We're migrating 50k historical tickets and will exceed our rate limit.\nResolution: Applied a temporary per-workspace throttle exception for the migration window via the infra admin tool, coordinated with the customer's migration schedule.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10133: Need higher rate limit temporarily for migration",
+      "chunk_id": "ticket_tkt_10133",
+      "last_updated": "2026-04-19",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "engineering_runbook",
+      "source_title_reference": "API & Database Latency Incident Response"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10141] Subject: Can Slack integration post customer replies too, not just new tickets\nQuestion: We only see new-ticket alerts in Slack, not customer replies.\nResolution: Added the 'ticket.customer_replied' event to their Slack routing rule so replies now post to the same channel.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10141: Can Slack integration post customer replies too, not just new tickets",
+      "chunk_id": "ticket_tkt_10141",
+      "last_updated": "2026-04-22",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Integrating CloudDesk with Slack"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10142] Subject: IdP metadata URL returns 404\nQuestion: The SAML metadata URL you gave us returns a 404.\nResolution: Customer had used the wrong workspace_id in the metadata URL after a workspace rename. Provided the correct current URL.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10142: IdP metadata URL returns 404",
+      "chunk_id": "ticket_tkt_10142",
+      "last_updated": "2026-04-25",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "SAML & SCIM Configuration Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10143] Subject: How many retry attempts before a webhook is marked failed\nQuestion: How many times will you retry before giving up on a webhook?\nResolution: Explained the 6-attempt exponential backoff schedule (1m, 5m, 30m, 2h, 12h) and that 20+ consecutive failures auto-disables the webhook.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10143: How many retry attempts before a webhook is marked failed",
+      "chunk_id": "ticket_tkt_10143",
+      "last_updated": "2026-04-28",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "Webhooks Reference"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10151] Subject: request_id missing from error, can't find in logs\nQuestion: Getting a generic 500 error with no request_id \u2014 hard to debug.\nResolution: Identified this as an edge case in an older SDK version that stripped the error envelope. Recommended upgrading to SDK v2.3+ where request_id is preserved.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10151: request_id missing from error, can't find in logs",
+      "chunk_id": "ticket_tkt_10151",
+      "last_updated": "2026-05-01",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "api_documentation",
+      "source_title_reference": "REST API Endpoints Overview"
+    }
+  },
+  {
+    "page_content": "Ticket [tkt_10152] Subject: Can we pay annually instead of monthly\nQuestion: Is there an annual billing option with a discount?\nResolution: Confirmed annual billing is available with a 15% discount versus monthly; switched customer's plan to annual effective next cycle.",
+    "metadata": {
+      "source_type": "support_ticket",
+      "title": "Ticket tkt_10152: Can we pay annually instead of monthly",
+      "chunk_id": "ticket_tkt_10152",
+      "last_updated": "2026-05-04",
+      "version": "n/a",
+      "source_file": "previous_support_tickets.csv",
+      "source_type_reference": "help_center_article",
+      "source_title_reference": "Billing, Plans, and Seat Management"
+    }
+  }
+]

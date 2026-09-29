@@ -1,0 +1,7 @@
+venv/
+.venv/
+.venv-1/
+__pycache__/
+.env
+*.pyc
+eval_results.csv
