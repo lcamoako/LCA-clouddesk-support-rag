@@ -1,7 +1,9 @@
-gradio
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+sentence-transformers
 pinecone-client
+gradio
 huggingface-hub
 python-dotenv
-sentence-transformers
 requests
 pandas
